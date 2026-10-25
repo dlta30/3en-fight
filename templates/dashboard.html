@@ -1,1 +1,155 @@
-<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="stylesheet" href="/static/style.css"><body><header><div class="logo">3eN <small>FIGHT</small></div><nav><a href="/">لوحة التحكم</a><a href="/logout">خروج</a></nav></header><main><p class="eyebrow">INSPECTOR PANEL · ROITH</p><h1>لوحة التحكم</h1><p class="muted">جلسات الفحص والتقارير</p>{% for m in get_flashed_messages() %}<p class="alert">{{m}}</p>{% endfor %}<section class="stats"><div class="card">إجمالي الجلسات <b>{{ss|length}}</b></div><div class="card">النتائج تحتاج مراجعة <b>{{ss|sum(attribute='results')|length if false else ''}}</b></div></section><section class="grid"><div class="card"><h2>إنشاء جلسة فحص</h2><form method="post" action="/create"><label>اسم اللاعب أو Steam ID</label><input name="player" required placeholder="اسم اللاعب أو Steam ID"><label>صلاحية الرابط</label><select name="minutes"><option value="10">10 دقائق</option><option value="30">30 دقيقة</option><option value="60">ساعة</option><option value="1440">24 ساعة</option></select><button>إنشاء جلسة</button></form><p class="muted">الرابط لا يفحص جهاز اللاعب تلقائيًا؛ اللاعب يختار الملفات ويرفعها بنفسه.</p></div><div class="card"><h2>الجلسات الأخيرة</h2><table><tr><th>اللاعب</th><th>الحالة</th><th>نتائج</th><th></th></tr>{% for x in ss %}<tr><td>{{x.player}}</td><td>{{x.status}}</td><td>{{x.results|length}}</td><td><a href="/session/{{x.id}}">تفاصيل</a></td></tr>{% endfor %}</table></div></section><footer>3eN Fight Scanner PRO · الأسماء مؤشرات وليست إثباتًا قاطعًا</footer></main></body></html>
+```html
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>3eN Fight Scanner PRO</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+    <div class="logo">3eN <small>FIGHT</small></div>
+    <nav>
+        <a href="/">لوحة التحكم</a>
+        <a href="/logout">خروج</a>
+    </nav>
+</header>
+
+<main>
+    <p class="eyebrow">INSPECTOR PANEL · ROITH</p>
+    <h1>لوحة التحكم</h1>
+    <p class="muted">جلسات الفحص وسجل نتائج اللاعبين</p>
+
+    {% for m in get_flashed_messages() %}
+        <p class="alert">{{ m }}</p>
+    {% endfor %}
+
+    <section class="stats">
+        <div class="card">
+            إجمالي الجلسات
+            <b>{{ ss|length }}</b>
+        </div>
+        <div class="card">
+            إجمالي عمليات الفحص
+            <b>{{ scans|length }}</b>
+        </div>
+        <div class="card">
+            ملفات تحتاج مراجعة
+            <b>{{ scans|sum(attribute='flagged_files') }}</b>
+        </div>
+    </section>
+
+    <section class="grid">
+        <div class="card">
+            <h2>إنشاء جلسة فحص</h2>
+            <form method="post" action="/create">
+                <label>اسم اللاعب أو Steam ID</label>
+                <input name="player" required
+                       placeholder="اسم اللاعب أو Steam ID">
+
+                <label>صلاحية الرابط</label>
+                <select name="minutes">
+                    <option value="10">10 دقائق</option>
+                    <option value="30">30 دقيقة</option>
+                    <option value="60">ساعة</option>
+                    <option value="1440">24 ساعة</option>
+                </select>
+
+                <button type="submit">إنشاء جلسة</button>
+            </form>
+            <p class="muted">
+                الجلسة تنشئ رابطًا لرفع الملفات يدويًا، ولا تفحص الجهاز تلقائيًا.
+            </p>
+        </div>
+
+        <div class="card">
+            <h2>الجلسات الأخيرة</h2>
+            <div style="overflow-x:auto">
+                <table>
+                    <tr>
+                        <th>اللاعب</th>
+                        <th>الحالة</th>
+                        <th>الملفات</th>
+                        <th>التفاصيل</th>
+                    </tr>
+                    {% for x in ss %}
+                    <tr>
+                        <td>{{ x.player }}</td>
+                        <td>{{ x.status }}</td>
+                        <td>{{ x.results|length }}</td>
+                        <td><a href="/session/{{ x.id }}">عرض</a></td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4">لا توجد جلسات حتى الآن.</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section class="card" style="margin-top:24px">
+        <h2>سجل فحص البرنامج المركزي</h2>
+        <p class="muted">
+            الفحوصات التي يرسلها برنامج Scanner إلى الموقع ستظهر هنا.
+        </p>
+
+        <div style="overflow-x:auto">
+            <table>
+                <tr>
+                    <th>اللاعب</th>
+                    <th>تاريخ الفحص</th>
+                    <th>عدد الملفات</th>
+                    <th>تحتاج مراجعة</th>
+                    <th>النتائج</th>
+                </tr>
+
+                {% for scan in scans %}
+                <tr>
+                    <td>{{ scan.player }}</td>
+                    <td>{{ scan.created[:19].replace('T', ' ') }}</td>
+                    <td>{{ scan.total_files }}</td>
+                    <td>{{ scan.flagged_files }}</td>
+                    <td>
+                        <details>
+                            <summary>عرض الملفات</summary>
+                            {% for result in scan.results %}
+                            <p>
+                                <strong>{{ result.file }}</strong>
+                                {% if result.hits %}
+                                    <br>
+                                    <span class="alert">
+                                        مؤشرات: {{ result.hits|join(', ') }}
+                                    </span>
+                                {% else %}
+                                    <br><span class="muted">لم يُطابق اسم الملف المؤشرات المحددة.</span>
+                                {% endif %}
+                            </p>
+                            {% else %}
+                            <p>لا توجد تفاصيل ملفات.</p>
+                            {% endfor %}
+                        </details>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5">
+                        لا توجد نتائج مركزية حتى الآن. ستظهر بعد ربط برنامج EXE بالـ API.
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </section>
+
+    <footer>
+        3eN Fight Scanner PRO · By: ROITH
+        <br>
+        تطابق اسم الملف مؤشر يحتاج مراجعة، وليس إثباتًا قاطعًا على الغش.
+    </footer>
+</main>
+</body>
+</html>
+```
