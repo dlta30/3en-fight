@@ -1,155 +1,57 @@
-```html
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width">
-    <title>3eN Fight Scanner PRO</title>
-    <link rel="stylesheet" href="/static/style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#090a0f">
+  <title>3eN lnspector Team</title>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-<header>
-    <div class="logo">3eN <small>FIGHT</small></div>
-    <nav>
-        <a href="/">لوحة التحكم</a>
-        <a href="/logout">خروج</a>
-    </nav>
-</header>
-
-<main>
-    <p class="eyebrow">INSPECTOR PANEL · ROITH</p>
-    <h1>لوحة التحكم</h1>
-    <p class="muted">جلسات الفحص وسجل نتائج اللاعبين</p>
-
-    {% for m in get_flashed_messages() %}
-        <p class="alert">{{ m }}</p>
-    {% endfor %}
-
+<aside class="sidebar">
+  <a class="brand" href="/"><span class="brand-mark">3eN</span><span class="brand-name">lnspector <b>Team</b></span></a>
+  <div class="side-label">WORKSPACE</div>
+  <a class="side-link active" href="#overview"><span>◈</span> الرئيسية</a>
+  <a class="side-link" href="#create-file"><span>＋</span> إنشاء ملف فحص</a>
+  <a class="side-link" href="#reports"><span>▤</span> التقارير</a>
+  <div class="sidebar-bottom"><span class="status-dot"></span> لوحة الفحص آمنة<br><small>الوصول للمشرف فقط</small><a href="/logout" class="logout">تسجيل الخروج ↗</a></div>
+</aside>
+<div class="main-shell">
+  <header class="topbar"><div><span class="eyebrow">INSPECTION CONSOLE / ROITH</span><h1>مركز الفحص</h1></div><div class="top-pill"><span class="status-dot"></span> النظام جاهز لاستقبال النتائج</div></header>
+  <main>
+    {% for m in get_flashed_messages() %}<div class="alert">⚠ {{ m }}</div>{% endfor %}
+    <section id="overview" class="hero">
+      <div><div class="hero-tag">3eN · INSPECTOR TEAM</div><h2>كل الفحوصات، <em>في مكان واحد.</em></h2><p>أنشئ جلسة فحص بموافقة صاحب الجهاز، تابع النتائج، واحتفظ بتقارير قابلة للتصدير.</p><a class="primary-btn" href="#create-file">＋ إنشاء جلسة جديدة</a></div>
+      <div class="hero-graphic"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="scanner-core"><span>3eN</span><small>INSPECTOR</small></div><div class="graphic-cross cross-one">+</div><div class="graphic-cross cross-two">+</div></div>
+    </section>
     <section class="stats">
-        <div class="card">
-            إجمالي الجلسات
-            <b>{{ ss|length }}</b>
-        </div>
-        <div class="card">
-            إجمالي عمليات الفحص
-            <b>{{ scans|length }}</b>
-        </div>
-        <div class="card">
-            ملفات تحتاج مراجعة
-            <b>{{ scans|sum(attribute='flagged_files') }}</b>
-        </div>
+      <article class="stat-card"><div class="stat-top"><span>إجمالي الجلسات</span><span class="stat-icon">◈</span></div><strong>{{ ss|length }}</strong><small>جلسات تم إنشاؤها</small></article>
+      <article class="stat-card"><div class="stat-top"><span>التقارير المستلمة</span><span class="stat-icon">▤</span></div><strong>{{ scans|length }}</strong><small>نتائج الفحص المركزي</small></article>
+      <article class="stat-card"><div class="stat-top"><span>مؤشرات للمراجعة</span><span class="stat-icon alert-icon">⌁</span></div><strong>{{ scans|sum(attribute='flagged_files') }}</strong><small>ليست إثباتًا نهائيًا</small></article>
     </section>
-
-    <section class="grid">
-        <div class="card">
-            <h2>إنشاء جلسة فحص</h2>
-            <form method="post" action="/create">
-                <label>اسم اللاعب أو Steam ID</label>
-                <input name="player" required
-                       placeholder="اسم اللاعب أو Steam ID">
-
-                <label>صلاحية الرابط</label>
-                <select name="minutes">
-                    <option value="10">10 دقائق</option>
-                    <option value="30">30 دقيقة</option>
-                    <option value="60">ساعة</option>
-                    <option value="1440">24 ساعة</option>
-                </select>
-
-                <button type="submit">إنشاء جلسة</button>
-            </form>
-            <p class="muted">
-                الجلسة تنشئ رابطًا لرفع الملفات يدويًا، ولا تفحص الجهاز تلقائيًا.
-            </p>
-        </div>
-
-        <div class="card">
-            <h2>الجلسات الأخيرة</h2>
-            <div style="overflow-x:auto">
-                <table>
-                    <tr>
-                        <th>اللاعب</th>
-                        <th>الحالة</th>
-                        <th>الملفات</th>
-                        <th>التفاصيل</th>
-                    </tr>
-                    {% for x in ss %}
-                    <tr>
-                        <td>{{ x.player }}</td>
-                        <td>{{ x.status }}</td>
-                        <td>{{ x.results|length }}</td>
-                        <td><a href="/session/{{ x.id }}">عرض</a></td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="4">لا توجد جلسات حتى الآن.</td>
-                    </tr>
-                    {% endfor %}
-                </table>
-            </div>
-        </div>
+    <section id="create-file" class="section-block">
+      <div class="section-heading"><div><span class="eyebrow">01 / CREATE</span><h2>إنشاء ملف فحص</h2><p>جهّز جلسة خاصة وشارك رابط الرفع مع صاحب الجهاز.</p></div><span class="section-symbol">＋</span></div>
+      <div class="create-layout">
+        <form class="create-card" method="post" action="/create">
+          <label for="player">اسم اللاعب أو المعرّف</label><input id="player" name="player" required maxlength="100" placeholder="مثال: Player / Steam ID">
+          <label for="minutes">صلاحية رابط الجلسة</label><select id="minutes" name="minutes"><option value="10">10 دقائق</option><option value="30">30 دقيقة</option><option value="60">ساعة واحدة</option><option value="1440">24 ساعة</option></select>
+          <button class="primary-btn full" type="submit">إنشاء جلسة الفحص <span>←</span></button>
+          <p class="form-note">سيتم إنشاء رابط جلسة. لا يبدأ فحص الجهاز عن بُعد تلقائيًا؛ يجب أن يشارك صاحبه الملفات أو يشغّل أداة الفحص بنفسه وبموافقته.</p>
+        </form>
+        <div class="info-card"><div class="info-icon">⌘</div><h3>كيف تعمل الجلسة؟</h3><ul><li>أنشئ جلسة باسم اللاعب.</li><li>أرسل رابط الرفع لصاحب الجهاز.</li><li>استقبل الملفات المسموح بمشاركتها.</li><li>راجع المؤشرات ثم صدّر التقرير.</li></ul><div class="info-foot"><span class="status-dot"></span> لا يوجد وصول خفي للأجهزة</div></div>
+      </div>
     </section>
-
-    <section class="card" style="margin-top:24px">
-        <h2>سجل فحص البرنامج المركزي</h2>
-        <p class="muted">
-            الفحوصات التي يرسلها برنامج Scanner إلى الموقع ستظهر هنا.
-        </p>
-
-        <div style="overflow-x:auto">
-            <table>
-                <tr>
-                    <th>اللاعب</th>
-                    <th>تاريخ الفحص</th>
-                    <th>عدد الملفات</th>
-                    <th>تحتاج مراجعة</th>
-                    <th>النتائج</th>
-                </tr>
-
-                {% for scan in scans %}
-                <tr>
-                    <td>{{ scan.player }}</td>
-                    <td>{{ scan.created[:19].replace('T', ' ') }}</td>
-                    <td>{{ scan.total_files }}</td>
-                    <td>{{ scan.flagged_files }}</td>
-                    <td>
-                        <details>
-                            <summary>عرض الملفات</summary>
-                            {% for result in scan.results %}
-                            <p>
-                                <strong>{{ result.file }}</strong>
-                                {% if result.hits %}
-                                    <br>
-                                    <span class="alert">
-                                        مؤشرات: {{ result.hits|join(', ') }}
-                                    </span>
-                                {% else %}
-                                    <br><span class="muted">لم يُطابق اسم الملف المؤشرات المحددة.</span>
-                                {% endif %}
-                            </p>
-                            {% else %}
-                            <p>لا توجد تفاصيل ملفات.</p>
-                            {% endfor %}
-                        </details>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="5">
-                        لا توجد نتائج مركزية حتى الآن. ستظهر بعد ربط برنامج EXE بالـ API.
-                    </td>
-                </tr>
-                {% endfor %}
-            </table>
-        </div>
+    <section id="reports" class="section-block">
+      <div class="section-heading"><div><span class="eyebrow">02 / REPORTS</span><h2>التقارير وسجل الفحص</h2><p>تابع الجلسات ونتائج الفحص من لوحة واحدة.</p></div><span class="section-symbol">▤</span></div>
+      <div class="table-card"><div class="table-title"><h3>جلسات الفحص</h3><span class="count-chip">{{ ss|length }} جلسة</span></div><div class="table-wrap"><table><thead><tr><th>اللاعب</th><th>الحالة</th><th>الملفات</th><th>تاريخ الإنشاء</th><th>التفاصيل</th></tr></thead><tbody>
+      {% for x in ss %}<tr><td><strong>{{ x.player }}</strong></td><td><span class="state-chip">{{ x.status }}</span></td><td>{{ x.results|length }}</td><td>{{ x.created[:16].replace('T',' ') }}</td><td><a class="table-link" href="/session/{{ x.id }}">فتح التقرير ↗</a></td></tr>{% else %}<tr><td colspan="5" class="empty">لا توجد جلسات بعد. أنشئ أول جلسة من القسم السابق.</td></tr>{% endfor %}
+      </tbody></table></div></div>
+      <div class="table-card"><div class="table-title"><h3>نتائج الفحص المركزي</h3><span class="count-chip">{{ scans|length }} تقرير</span></div><div class="table-wrap"><table><thead><tr><th>اللاعب</th><th>التاريخ</th><th>عدد الملفات</th><th>مؤشرات</th><th>تفاصيل النتائج</th></tr></thead><tbody>
+      {% for scan in scans %}<tr><td><strong>{{ scan.player }}</strong></td><td>{{ scan.created[:16].replace('T',' ') }}</td><td>{{ scan.total_files }}</td><td><span class="state-chip {% if scan.flagged_files %}state-warning{% endif %}">{{ scan.flagged_files }}</span></td><td><details><summary>عرض التفاصيل</summary>{% for result in scan.results %}<div class="result-row"><b>{{ result.file }}</b>{% if result.hits %}<p class="result-warning">مؤشرات: {{ result.hits|join(', ') }}</p>{% else %}<p class="muted">لم يُطابق اسم الملف المؤشرات المحددة.</p>{% endif %}</div>{% else %}<p>لا توجد تفاصيل.</p>{% endfor %}</details></td></tr>{% else %}<tr><td colspan="5" class="empty">لا توجد تقارير مستلمة حتى الآن.</td></tr>{% endfor %}
+      </tbody></table></div></div>
     </section>
-
-    <footer>
-        3eN Fight Scanner PRO · By: ROITH
-        <br>
-        تطابق اسم الملف مؤشر يحتاج مراجعة، وليس إثباتًا قاطعًا على الغش.
-    </footer>
-</main>
+    <footer><span class="brand-mini">3eN lnspector Team</span><span>نتائج المؤشرات تحتاج مراجعة بشرية وقد تتضمن نتائج إيجابية كاذبة.</span></footer>
+  </main>
+</div>
 </body>
 </html>
-```
