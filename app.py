@@ -1,4 +1,3 @@
-```python
 import os
 import json
 import secrets
@@ -262,7 +261,7 @@ def report(sid):
         io.BytesIO(output.getvalue().encode("utf-8-sig")),
         mimetype="text/csv",
         as_attachment=True,
-        download_name="3eN_report.csv"
+        download_name="3eN_lnspector_Team_report.csv"
     )
 
 
